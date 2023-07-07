@@ -1,21 +1,39 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
+
+    public class PeopleListViewModel
+    {
+        public IEnumerable<Person> People { get; set; } = Enumerable.Empty<Person>();
+        public IEnumerable<string> Cities { get; set; } = Enumerable.Empty<string>();
+        public string SelectedCity { get; set; } = string.Empty;
+
+        public string GetClass(string? city) => SelectedCity == city ? "background-color:black;" : "";
+        
+
+    }
+
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly DataContext context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(DataContext ctx)
         {
-            _logger = logger;
+            context = ctx;
         }
 
-        public IActionResult Index()
+        public IActionResult Index([FromQuery] string selectedCity)
         {
-            return View();
+            return View(new PeopleListViewModel
+            {
+                People = context.People.Include(p => p.Department).Include(p => p.Location),
+                Cities = context.Locations.Select(l => l.City).Distinct(),
+                SelectedCity = selectedCity
+            });
         }
 
         public IActionResult Privacy()
@@ -23,10 +41,5 @@ namespace WebApplication1.Controllers
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
     }
 }
