@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WebApplication1.Pages.Roles
 {
-    public class _ViewImportsModel : PageModel
+    public class CreateModel : PageModel
     {
         public void OnGet()
         {
