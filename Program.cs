@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using Microsoft.AspNetCore.Identity;
+using WebApplication1;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,16 @@ builder.Services.Configure<IdentityOptions>(opts =>
     opts.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyz";
 });
 
+builder.Services.AddAuthentication(opts =>
+{
+    opts.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    opts.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+}).AddCookie(opts =>
+{
+    opts.Events.DisableRedirectForPath(e => e.OnRedirectToLogin, "/api", StatusCodes.Status401Unauthorized);
+    opts.Events.DisableRedirectForPath(e => e.OnRedirectToAccessDenied, "/api", StatusCodes.Status403Forbidden);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -50,6 +62,8 @@ app.MapControllerRoute("controllers",
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseAuthentication();
+
 app.UseRouting();
 
 app.UseAuthorization();
@@ -61,5 +75,5 @@ app.MapControllerRoute(
 
 var context = app.Services.CreateScope().ServiceProvider.GetRequiredService<DataContext>();
 SeedData.SeedDatabase(context);
-
+IdentitySeedData.CreateAdminAccount(app.Services, app.Configuration);
 app.Run();
