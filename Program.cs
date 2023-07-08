@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,12 @@ builder.Services.AddDbContext<DataContext>(opts =>
     opts.UseSqlServer(builder.Configuration["ConnectionStrings:PeopleConnection"]);
     opts.EnableSensitiveDataLogging(true);
 });
+
+builder.Services.AddDbContext<IdentityContext>(opts =>
+{
+    opts.UseSqlServer(builder.Configuration["ConnectionStrings:IdentityConnection"]);
+});
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<IdentityContext>();
 
 
 // Add services to the container.
